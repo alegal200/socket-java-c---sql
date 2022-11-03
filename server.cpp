@@ -21,6 +21,8 @@
 #include <arpa/inet.h> /* pour la conversion adresse reseau->format dot */ 
 #define PORT 50000 /* Port d'ecoute de la socket serveur */ 
 #define MAXSTRING 100 /* Longueur des messages */ 
+int creationDunVac();
+void modifvac(char id[4] , char val[25] , int zone);
 int main() 
 { 
  int hSocketEcoute, /* Handle de la socket d'écoute */ 
@@ -30,7 +32,7 @@ int main()
  struct sockaddr_in adresseSocket; 
  /* Structure de type sockaddr contenant les infos adresses - ici, cas de TCP */ 
  uint tailleSockaddr_in; 
- char msgClient[MAXSTRING], msgServeur[MAXSTRING]; 
+ char msgClient[MAXSTRING], msgServeur[MAXSTRING] , msgHeader[25] ,  msgid[4]; ; 
  int nbreRecv; 
 /* 1. Création de la socket */ 
 hSocketEcoute= socket(AF_INET, SOCK_STREAM, 0); 
@@ -105,28 +107,83 @@ hSocketEcoute= socket(AF_INET, SOCK_STREAM, 0);
  exit(1); 
  } 
  else printf("Send socket OK\n"); 
-/* 9. Reception d'un second message client */ 
- if ((nbreRecv = recv(hSocketService, msgClient, MAXSTRING, 0)) == -1) 
- /* pas message urgent */ 
- { 
- printf("Erreur sur le recv de la socket %d\n", errno); 
- close(hSocketEcoute); /* Fermeture de la socket */ 
- close(hSocketService); /* Fermeture de la socket */ 
- exit(1); 
- } 
- else printf("Recv socket OK\n"); 
- msgClient[nbreRecv]=0; 
- printf("Message recu = %s\n", msgClient); 
-/* 10. Envoi de l'ACK du serveur au client */ 
- sprintf(msgServeur,"ACK pour votre message : <%s>", msgClient); 
- if (send(hSocketService, msgServeur, MAXSTRING, 0) == -1) 
- { 
- printf("Erreur sur le send de la socket %d\n", errno); 
- close(hSocketEcoute); /* Fermeture de la socket */ 
- close(hSocketService); /* Fermeture de la socket */ 
- exit(1); 
- } 
- else printf("Send socket OK\n"); 
+ while (true){
+    printf("recption d un msg");
+        /* 9. Reception d'un second message client */ 
+    if ((nbreRecv = recv(hSocketService, msgClient, MAXSTRING, 0)) == -1) 
+    /* pas message urgent */ 
+    { 
+    printf("Erreur sur le recv de la socket %d\n", errno); 
+    close(hSocketEcoute); /* Fermeture de la socket */ 
+    close(hSocketService); /* Fermeture de la socket */ 
+    exit(1); 
+    } 
+    else printf("Recv socket OK\n"); 
+
+        msgClient[nbreRecv]=0; // ?
+        printf("Message recu = %s\n", msgClient); 
+
+        /* 10. Envoi de l'ACK du serveur au client */ 
+        // sprintf(msgServeur,"ACK pour votre message : <%s>", msgClient); 
+        printf("\n\n\n\nla reponse envoyer est %s\n",msgClient);
+        strncpy(msgHeader,msgClient,23);
+        printf("val du header %s \n",msgHeader);
+        if( strcmp("con:alex@pass",msgClient) == 0){
+            strcpy( msgServeur ,"123456789987654321" ) ;
+        }
+        
+        else if(strcmp("tok:123456789987654321@",msgHeader) == 0){
+            memcpy(msgServeur,&msgClient[23],9);
+            // creation ->
+            if(strcmp(msgServeur,"creation") == 0 ){
+                int id_tmp ;
+                char id_tmpp[4];
+                id_tmp = creationDunVac();
+                strcpy(msgServeur,"id:");
+                snprintf(id_tmpp, 6, "%d", id_tmp);
+                strcat(msgServeur,id_tmpp);
+                printf("vla %s \n",msgServeur);
+                 
+            }
+            // modification -> 
+            memcpy(msgServeur,&msgClient[23],1);
+            
+            // nom 
+            printf("-----%c\n",msgServeur[0]);
+            if(msgServeur[0] == 'm'  ){
+             memcpy(msgid,&msgClient[25],4); 
+             msgid[4] = '\0'; 
+             memcpy(msgServeur,&msgClient[29],25); 
+             modifvac(msgid,msgServeur,0);
+             printf("------ \n");    
+
+            }
+            
+            
+            
+           
+        }
+        else{
+            strcpy(msgServeur,"\0");
+        }
+
+
+        printf("val client %s \n",msgClient);
+        printf("val msg %s \n",msgServeur);    
+
+    if (send(hSocketService, msgServeur, MAXSTRING, 0) == -1) 
+    { 
+        printf("Erreur sur le send de la socket %d\n", errno); 
+        close(hSocketEcoute); /* Fermeture de la socket */ 
+        close(hSocketService); /* Fermeture de la socket */ 
+        exit(1); 
+    } 
+
+    
+    else printf("Send socket OK\n");
+ }
+ 
+ 
 /* 11. Fermeture des sockets */ 
 close(hSocketService); /* Fermeture de la socket */ 
  printf("Socket connectee au client fermee\n"); 
@@ -134,3 +191,82 @@ close(hSocketEcoute); /* Fermeture de la socket */
  printf("Socket serveur fermee\n"); 
  return 0; 
 } 
+
+
+
+
+///////////////////////////////////
+///// ouverture du fichier + création d une ligne pour un nouveau vac + return id vac (int)
+//////////////////////////////////
+int creationDunVac(){
+    char val_last_id[5] , c ; 
+    int last_id ;
+    FILE *fp , *fp_tmp;
+    fp = fopen("./current.vac","r");
+    fseek(fp, 0, SEEK_SET); 
+    fread(val_last_id, sizeof(val_last_id), 1, fp);
+    last_id = atoi(val_last_id);
+    fp_tmp = fopen("./tmp.vac","w");
+    fprintf(fp_tmp,"%4d;XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;00/00/0000;N\n",++last_id);
+    fseek(fp, 0, SEEK_SET); 
+    while ( ( c = getc(fp)) != EOF ) { 
+        fputc(c, fp_tmp);  
+    }
+    fclose(fp);
+    fclose(fp_tmp);
+    remove("./current.vac");
+    rename("./tmp.vac","./current.vac");
+    return last_id ;
+}
+///////////////////////////////////
+///////////////////////////////////
+///////////////////////////////////
+void modifvac(char id[5] , char val[25], int zone){
+    printf("entre dans la fct modifiif \n ////////// \n");
+    FILE *fp , *fp_tmp;
+    char c ,id_read[5]  ;
+    int id_int , id_source , ptvirg = 0 ;
+    long ln_seek ;  
+    id_source = atoi(id);  
+    fp = fopen("./current.vac","r");
+    fp_tmp = fopen("./tmp.vac","w");
+    fseek(fp, 0, SEEK_SET);
+    fseek(fp_tmp, 0, SEEK_SET);
+    //lecture du 1 er id 
+    fread(id_read, sizeof(id_read), 1, fp); // lecture de
+    id_int = atoi(id_read); 
+    fprintf(fp_tmp,"%4d",id_int);   
+    fputc(';', fp_tmp);  
+    
+    while ( ( c = getc(fp)) != EOF ) {                   ///  |a;bcdefg
+        if(c=='\n'){
+           fread(id_read, sizeof(id_read), 1, fp); // lecture de l id 
+           id_int = atoi(id_read);  
+           fputc('\n', fp_tmp); 
+           fprintf(fp_tmp,"%4d",id_int);   
+           fputc(';', fp_tmp);   
+           ptvirg = 0 ; 
+        }
+        if(c==';')
+            ptvirg++;
+        if(id_int == id_source && ptvirg == zone ){ 
+            while ( ( c = getc(fp)) != EOF ){
+                if(c==';' || c =='\n')
+                    break;
+            }
+            if(zone != 0)    
+                fputc(';', fp_tmp);  
+            fputs(val,fp_tmp); 
+            id_int = -1 ;
+            //ptvirg = 0 ;    
+                        
+        }
+        if(c !='\n')
+            fputc(c, fp_tmp);     
+    }
+    fclose(fp);
+    fclose(fp_tmp);
+
+    remove("./current.vac");
+    rename("./tmp.vac","./current.vac");
+}

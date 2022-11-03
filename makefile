@@ -1,8 +1,13 @@
-all: clear client server
+all: clear rm client server
 #test
- 
+
+#remove compile project
+rm : 
+	rm client
+	rm server
+#clear console
 clear : 
-	clear
+	clear 
 
 client :
 	g++ client.cpp -o client 
