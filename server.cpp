@@ -108,7 +108,7 @@ hSocketEcoute= socket(AF_INET, SOCK_STREAM, 0);
  } 
  else printf("Send socket OK\n"); 
  while (true){
-    printf("recption d un msg");
+        // printf("recption d un msg");
         /* 9. Reception d'un second message client */ 
     if ((nbreRecv = recv(hSocketService, msgClient, MAXSTRING, 0)) == -1) 
     /* pas message urgent */ 
@@ -118,7 +118,7 @@ hSocketEcoute= socket(AF_INET, SOCK_STREAM, 0);
     close(hSocketService); /* Fermeture de la socket */ 
     exit(1); 
     } 
-    else printf("Recv socket OK\n"); 
+    //else printf("Recv socket OK\n"); 
 
         msgClient[nbreRecv]=0; // ?
         printf("Message recu = %s\n", msgClient); 
@@ -135,30 +135,49 @@ hSocketEcoute= socket(AF_INET, SOCK_STREAM, 0);
         else if(strcmp("tok:123456789987654321@",msgHeader) == 0){
             memcpy(msgServeur,&msgClient[23],9);
             // creation ->
-            if(strcmp(msgServeur,"creation") == 0 ){
+            if(strcmp(msgServeur,"creation") == 0 ){   
                 int id_tmp ;
                 char id_tmpp[4];
-                id_tmp = creationDunVac();
-                strcpy(msgServeur,"id:");
+                memset(msgServeur,'\0',sizeof(msgServeur));
+                id_tmp = creationDunVac();      
                 snprintf(id_tmpp, 6, "%d", id_tmp);
-                strcat(msgServeur,id_tmpp);
+                strcpy(msgServeur,id_tmpp);
                 printf("vla %s \n",msgServeur);
-                 
             }
+            else{
             // modification -> 
-            memcpy(msgServeur,&msgClient[23],1);
-            
-            // nom 
-            printf("-----%c\n",msgServeur[0]);
-            if(msgServeur[0] == 'm'  ){
-             memcpy(msgid,&msgClient[25],4); 
-             msgid[4] = '\0'; 
-             memcpy(msgServeur,&msgClient[29],25); 
-             modifvac(msgid,msgServeur,0);
-             printf("------ \n");    
+                memset(msgServeur,'\0',sizeof(msgServeur));
+                memcpy(msgServeur,&msgClient[23],2);
+                    // nom 
+                
+                if(msgServeur[0] == 'm' &&msgServeur[1] == 'n' ){
+                memcpy(msgid,&msgClient[25],4); 
+                msgid[4] = '\0'; 
+                memcpy(msgServeur,&msgClient[29],25); 
+                modifvac(msgid,msgServeur,0);
+                }
 
-            }
+                if(msgServeur[0] == 'm' &&msgServeur[1] == 'p' ){
+                memcpy(msgid,&msgClient[25],4); 
+                msgid[4] = '\0'; 
+                memcpy(msgServeur,&msgClient[29],25); 
+                modifvac(msgid,msgServeur,1);
+                }
+                if(msgServeur[0] == 'm' &&msgServeur[1] == 'd' ){
+                memcpy(msgid,&msgClient[25],4); 
+                msgid[4] = '\0'; 
+                memcpy(msgServeur,&msgClient[29],25); 
+                modifvac(msgid,msgServeur,2);
+                }
+                if(msgServeur[0] == 'm' &&msgServeur[1] == 'e' ){
+                memcpy(msgid,&msgClient[25],4); 
+                msgid[4] = '\0'; 
+                memcpy(msgServeur,&msgClient[29],25); 
+                modifvac(msgid,msgServeur,2);
+                }
             
+            }
+           
             
             
            
@@ -219,7 +238,7 @@ int creationDunVac(){
     return last_id ;
 }
 ///////////////////////////////////
-///////////////////////////////////
+//////id , valeur plus la zonne de mémoir et le fichier sera mit a  jour avec la bonne valeur
 ///////////////////////////////////
 void modifvac(char id[5] , char val[25], int zone){
     printf("entre dans la fct modifiif \n ////////// \n");

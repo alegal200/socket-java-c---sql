@@ -3,8 +3,8 @@ all: clear rm client server
 
 #remove compile project
 rm : 
-	rm client
-	rm server
+#	rm client
+#	rm server
 #clear console
 clear : 
 	clear 
