@@ -9,18 +9,16 @@
 
 *  connection 
     - envoies au serveur  login et le mots de passes 
-    si le serveur est d accord alors le serveur donnera un numéro de connection 
+    si le serveur est d accord alors le serveur donnera un numéro de connection (token)
 
 * deconnection 
-    - envoies au serveur une deconnextion avec le id de session 
+    - couper la connection avec le serveur 
 
 * ajout vacancier 
-    - créer une structure vacancier 
-    - envoyer le vacancier 
-    - envoyer le numero de connection 
+    - le client envoi une demande de création au serveur 
+    - le serveur repond en donnant l id du nouveau utilisateur
+    - le client modifie le nouveau vacancier 
 
 * modification vacancier 
-    - envoyer une demande au serveur  + num de connection 
-    - recupéré les informations 
-    - afficher les infos plus possibilité de modification 
-    - renvoyer le vacancier au serveur 
+    - envoyer une demande au serveur  + token de connection + modification + type de modification suivit de l id suivit de la valeur a cahnger (pas d espace)
+
