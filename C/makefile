@@ -1,10 +1,11 @@
-all: clear rm client server
+all: clear rm client server envoi
 #test
 
 #remove compile project
 rm : 
 #	rm client
 #	rm server
+	rm envoi
 #clear console
 clear : 
 	clear 
@@ -18,6 +19,8 @@ server :
 # 
 #-lnsl -lsocket
 #
+envoi: 
+	g++ envoi.cpp -o envoi
 #
 # test : 
 #	g++ test.cpp -o test

@@ -1,0 +1,14 @@
+sudo yum update --skip-broken --allowerasing --nobest
+sudo yum install postgresql-server postgresql-contrib
+sudo postgresql-setup initdb
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+sudo -u postgres psql -c "SELECT version();"
+sudo su - postgres
+psql
+CREATE USER alex PASSWORD 'alex';
+CREATE DATABASE alexdb OWNER alex;
+ALTER USER "user" with superuser;
+\c alexdb
+CREATE TABLE test (    test1 VARCHAR ( 50 ) ,	test2 VARCHAR ( 50 ) );
+\dt
