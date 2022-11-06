@@ -10,8 +10,17 @@ public class OutPutPrinter {
     private void startPage() throws IOException {
         o.write("HTTP/1.1 200 ok \r\n".getBytes());
         o.write("\r\n".getBytes());
+        o.write("<!DOCTYPE html>".getBytes());
+        o.write("<html>".getBytes());
+        o.write("<body>".getBytes());
+        o.write("<h1>VACANCIER FINDER</h1>".getBytes());
+
+
+        //o.write("".getBytes());
     }
     private void endPage() throws IOException {
+        o.write("</body>".getBytes());
+        o.write("</html>".getBytes());
         o.write("\r\n\r\n".getBytes());
         o.flush();
     }
@@ -21,16 +30,36 @@ public class OutPutPrinter {
 
     public void  firstPage() throws IOException {
         this.startPage();
-        o.write("<b>id du vac :</b>".getBytes());
-        o.write("<textarea></textarea>".getBytes());
-        o.write("<button>send</button>".getBytes());
+        o.write("<p>id du vac :</p>".getBytes());
+        o.write("<form  method=\"GET\">".getBytes());
+        o.write("<input  name=\"id=\">".getBytes());
+        o.write("<input type=\"submit\" value=\"Send\">".getBytes());
+        o.write("<form>".getBytes());
+
         this.endPage();
 
     }
 
 
 
+/*
+<!DOCTYPE html>
+<html>
+<body>
 
+<h1>VACANCIER FINDER</h1>
+
+<b>id du vac :</b>
+<form  method="GET">
+    <input  name="id=">
+    <input type="submit" value="Send">
+<form>
+
+</body>
+</html>
+
+
+ */
 
 
 

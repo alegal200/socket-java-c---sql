@@ -5,8 +5,8 @@ import java.net.Socket;
 
 public class C_read_server_Runnable implements  Runnable{
 
-    private String ip = "192.168.91.130";
-    private int port  = 5011;
+    private String ip = "192.168.220.128";
+    private int port  = 50011;
 
     @Override
     public void run() {
@@ -16,17 +16,13 @@ public class C_read_server_Runnable implements  Runnable{
            BufferedOutputStream out = new BufferedOutputStream(  socket_client.getOutputStream()  ) ;
            PrintWriter wrt = new PrintWriter(out) ;
            wrt.write("hello test");
+           wrt.flush();
+           wrt.close();
+           socket_client.close();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
-
-
-
-
-
 
     }
 

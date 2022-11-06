@@ -6,14 +6,17 @@ import java.net.Socket;
 
 public class HTTP_Server_Runable implements  Runnable {
 private int id = 0 ;
+private Socket ts ;
+
+    public HTTP_Server_Runable(Socket tts) {
+        ts= tts ;
+
+    }
 
     @Override
     public void run() {
         try{
-            int port_num = 8081 ;
-            ServerSocket ss = new ServerSocket (port_num) ;
-            while ( true ) {
-                Socket ts = ss.accept () ;
+
                 //       OutputStream out = ts.getOutputStream() ;
                 //       InputStream in = ts.getInputStream() ;
                 BufferedReader buffRead = new BufferedReader(new InputStreamReader(ts.getInputStream())) ;
@@ -27,10 +30,10 @@ private int id = 0 ;
                     if(s.startsWith("GET")){
                         String id_str =" ";
                         /// id parsing
-                        if(s.split("id=").length > 1) {
-                            id_str = s.split("id=")[1];
+                        if(s.split("id%3D=").length > 1) {
+                            id_str = s.split("id%3D=")[1];
                             if (id_str.contains("&&"))
-                                id_str = id_str.split("&&")[0];
+                                id_str = id_str.split("&")[0];
                             else
                                 id_str = id_str.split(" ")[0];
                             System.out.println("id est ->" + id_str + "<-");
@@ -55,7 +58,7 @@ private int id = 0 ;
                 output_client_print.close();
 
                 ts.close();
-            }
+
 
 
         }catch (Exception e){
@@ -63,3 +66,5 @@ private int id = 0 ;
         }
     }
 }
+
+
