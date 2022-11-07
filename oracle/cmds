@@ -1,0 +1,21 @@
+sudo yum list oracle-database-preinstall-21c
+sudo dnf install oracle-database-preinstall-21c -y 
+passwd oracle
+oracle
+oracle
+sudo mkdir -p /u01/app/oracle/product/21c/db1
+sudo mkdir -p /u01/app/oraInventory
+sudo chown -R oracle.oinstall /u01
+sudo chmod -R 775 /u01
+su - root
+root11
+export ORACLE_BASE=/u01/app/oracle
+export ORACLE_HOME=${ORACLE_BASE}/product/21c/db1
+export ORACLE_HOSTNAME=oel8
+export PATH=${ORACLE_HOME}/bin:${ORACLE_HOME}/OPatch:${PATH}
+export LD_LIBRARY_PATH=${ORACLE_HOME}/lib:/lib:/usr/lib
+export CLASSPATH=${ORACLE_HOME}/jlib:${ORACLE_HOME}/rdbms/jlib
+export ORACLE_SID=prd
+
+
+ yum install oracle-database-preinstall-19c.x86_64

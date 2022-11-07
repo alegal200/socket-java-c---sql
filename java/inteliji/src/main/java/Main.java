@@ -6,6 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Main {
+
     public static void main(String[] args) {
         System.out.println("slt bg");
         server_Socket s = new server_Socket();

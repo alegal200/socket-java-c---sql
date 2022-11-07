@@ -12,3 +12,5 @@ ALTER USER "user" with superuser;
 \c alexdb
 CREATE TABLE test (    test1 VARCHAR ( 50 ) ,	test2 VARCHAR ( 50 ) );
 \dt
+sudo firewall-cmd --add-service=postgresql --permanent 
+sudo firewall-cmd --reload
