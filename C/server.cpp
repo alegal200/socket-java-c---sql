@@ -23,6 +23,7 @@
 #define MAXSTRING 100 /* Longueur des messages */ 
 int creationDunVac();
 void modifvac(char id[4] , char val[25] , int zone);
+int taille( char* ta);
 int main() 
 { 
  int hSocketEcoute, /* Handle de la socket d'écoute */ 
@@ -32,7 +33,7 @@ int main()
  struct sockaddr_in adresseSocket; 
  /* Structure de type sockaddr contenant les infos adresses - ici, cas de TCP */ 
  uint tailleSockaddr_in; 
- char msgClient[MAXSTRING], msgServeur[MAXSTRING] , msgHeader[25] ,  msgid[4]; ; 
+ char msgClient[MAXSTRING], msgServeur[MAXSTRING] ,  msgServeurSend[MAXSTRING] , msgHeader[25] ,  msgid[4]; ; 
  int nbreRecv; 
 /* 1. Création de la socket */ 
 hSocketEcoute= socket(AF_INET, SOCK_STREAM, 0); 
@@ -78,39 +79,30 @@ hSocketEcoute= socket(AF_INET, SOCK_STREAM, 0);
 /* 6. Acceptation d'une connexion */ 
  tailleSockaddr_in = sizeof(struct sockaddr_in); 
  if ( (hSocketService = 
- accept(hSocketEcoute, (struct sockaddr *)&adresseSocket, &tailleSockaddr_in) ) 
- == -1) 
- { 
+ accept(hSocketEcoute, (struct sockaddr *)&adresseSocket, &tailleSockaddr_in) ) == -1) { 
  printf("Erreur sur l'accept de la socket %d\n", errno); 
  close(hSocketEcoute); exit(1); 
  } 
  else printf("Accept socket OK\n"); 
-/* 7.Reception d'un message client */ 
- if ((nbreRecv = recv(hSocketService, msgClient, MAXSTRING, 0)) == -1) 
- /* pas message urgent */ 
- { 
- printf("Erreur sur le recv de la socket %d\n", errno); 
- close(hSocketEcoute); /* Fermeture de la socket */ 
- close(hSocketService); /* Fermeture de la socket */ 
- exit(1); 
- } 
- else printf("Recv socket OK\n"); 
- msgClient[nbreRecv]=0; 
- printf("Message recu = %s\n", msgClient); 
-/* 8. Envoi de l'ACK du serveur au client */ 
- sprintf(msgServeur,"ACK pour votre message : <%s>", msgClient); 
- if (send(hSocketService, msgServeur, MAXSTRING, 0) == -1) 
- { 
- printf("Erreur sur le send de la socket %d\n", errno); 
- close(hSocketEcoute); /* Fermeture de la socket */ 
- close(hSocketService); /* Fermeture de la socket */ 
- exit(1); 
- } 
- else printf("Send socket OK\n"); 
+
+
+
+ 
  while (true){
+    memset(msgClient,'\0',sizeof(msgClient));
         // printf("recption d un msg");
         /* 9. Reception d'un second message client */ 
-    if ((nbreRecv = recv(hSocketService, msgClient, MAXSTRING, 0)) == -1) 
+    if ((nbreRecv = recv(hSocketService, msgClient, 4, 0)) == -1) 
+    /* pas message urgent */ 
+    { 
+    printf("Erreur sur le recv de la socket %d\n", errno); 
+    close(hSocketEcoute); /* Fermeture de la socket */ 
+    close(hSocketService); /* Fermeture de la socket */ 
+    exit(1); 
+    }        
+     printf("nbr recu = %s\n", msgClient);
+    int nbrToRead = atoi(msgClient);
+    if ((nbreRecv = recv(hSocketService, msgClient, nbrToRead, 0)) == -1) 
     /* pas message urgent */ 
     { 
     printf("Erreur sur le recv de la socket %d\n", errno); 
@@ -118,9 +110,6 @@ hSocketEcoute= socket(AF_INET, SOCK_STREAM, 0);
     close(hSocketService); /* Fermeture de la socket */ 
     exit(1); 
     } 
-    //else printf("Recv socket OK\n"); 
-
-        msgClient[nbreRecv]=0; // ?
         printf("Message recu = %s\n", msgClient); 
 
         /* 10. Envoi de l'ACK du serveur au client */ 
@@ -178,19 +167,21 @@ hSocketEcoute= socket(AF_INET, SOCK_STREAM, 0);
             
             }
            
-            
-            
-           
+
         }
         else{
-            strcpy(msgServeur,"\0");
+            strcpy(msgServeur,"ERROR\0");
         }
 
 
         printf("val client %s \n",msgClient);
         printf("val msg %s \n",msgServeur);    
+        memset(msgServeurSend,'\0',sizeof(msgServeurSend));
+        int nbrcar = taille(msgServeur);
+        snprintf(msgServeurSend, 6, "%4d", nbrcar);
+        strcat(msgServeurSend,msgServeur);
 
-    if (send(hSocketService, msgServeur, MAXSTRING, 0) == -1) 
+    if (send(hSocketService, msgServeurSend, 4+nbrcar, 0) == -1) 
     { 
         printf("Erreur sur le send de la socket %d\n", errno); 
         close(hSocketEcoute); /* Fermeture de la socket */ 
@@ -210,6 +201,20 @@ close(hSocketEcoute); /* Fermeture de la socket */
  printf("Socket serveur fermee\n"); 
  return 0; 
 } 
+
+
+///////////////////////////////////////////////////////////
+int taille( char* ta){
+   int taille = 0 ;
+   while (ta[taille] != '\0') {
+      taille++;
+   }
+   return taille ;
+}
+   
+
+
+
 
 
 

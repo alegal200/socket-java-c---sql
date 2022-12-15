@@ -1,12 +1,4 @@
-/* TCPCLI01.C 
-* client * 
-- Claude Vilvens - 
 
-//////////////////////////////
-        PAGE  50-51-52 
-/////////////////////////////
-
-*/ 
 #include <stdio.h> 
 #include <stdlib.h> /* pour exit */ 
 #include <string.h> /* pour memcpy */ 
@@ -22,7 +14,13 @@
 using namespace std;
 #define PORT 50000 /*F Port d'ecoute de la socket serveur */ 
 #define MAXSTRING 100 /* Longeur des messages */ 
-#define DEBUG 1 // set 0 or 1
+#define DEBUG 0 // set 0 or 1
+int taille( char* ta);
+void sendmsg( int sock , char * val);
+void recevmsg(int sock);
+
+char msgServeur[MAXSTRING];
+
 int main() 
 { 
  int hSocket; /* Handle de la socket */ 
@@ -31,7 +29,7 @@ int main()
  struct sockaddr_in adresseSocket; /* Structure de type sockaddr - ici, cas de TCP */ 
  unsigned int tailleSockaddr_in; 
  int ret , id_du_vac; /* valeur de retour */ 
- char msgClient[MAXSTRING], msgServeur[MAXSTRING] , tokenDeCon[MAXSTRING]  , id_vac[5] ; 
+ char msgClient[MAXSTRING] , msgClientTmp[MAXSTRING], tokenDeCon[MAXSTRING]  , id_vac[5] ; 
  char choix ;
  char  pseudo[MAXSTRING] ="0", pass[MAXSTRING] ="0" ;  
     /* 1. Création de la socket */ 
@@ -76,73 +74,38 @@ if(DEBUG)
    if(DEBUG)
       printf("Connect socket OK\n"); 
  } 
-    /* 5.Envoi d'un message client */ 
- strcpy(msgClient,"tentative de connection"); 
- if (send(hSocket, msgClient, MAXSTRING, 0) == -1) /* pas message urgent */ { 
-   if(DEBUG)
-      printf("Erreur sur le send de la socket %d\n", errno); 
-    close(hSocket); /* Fermeture de la socket */ 
-    exit(1); 
- } 
- else {
-   if(DEBUG)
-      printf("Send socket OK\n"); 
-   }
-if(DEBUG)  
-   printf("Message envoye = %s\n", msgClient); 
-    /* 6. Reception de l'ACK du serveur au client */ 
- if (recv(hSocket, msgServeur, MAXSTRING, 0) == -1) { 
-   if(DEBUG)
-      printf("Erreur sur le recv de la socket %d\n", errno); 
-     close(hSocket); /* Fermeture de la socket */ 
-     exit(1); 
- } 
- else {
-    if(DEBUG)
-      printf("Recv socket OK\n"); 
- }
-if(DEBUG){
-    printf("Message recu en ACK = %s\n", msgServeur); 
-}
 
-while (tokenDeCon[0] == '\0' )
-   {
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//mycode
+tokenDeCon[0] = '\0';
+while (tokenDeCon[0] == '\0' || tokenDeCon[0] == 'E' ){
    printf("------------------\n");
    printf("Bonjour \n");
    printf("pseudo ?\n");
    cin >> pseudo ; 
    printf("password ? \n");
    cin >> pass ;
-   strcpy(msgClient,"\0");
-   strcat(msgClient,"con:");
-   strcat(msgClient,pseudo);
-   strcat(msgClient,"@");
-   strcat(msgClient,pass);
-   if(DEBUG)
-      printf(" concat str :%s* \n",msgClient);
-   // envoie
-   
-   if (send(hSocket, msgClient, MAXSTRING, 0) == -1) /* pas message urgent */ { 
-      printf("Erreur sur le send de la socket %d\n", errno); 
-      close(hSocket); /* Fermeture de la socket */ 
-      exit(1); 
-   } 
-   if (recv(hSocket, msgServeur, MAXSTRING, 0) == -1) { 
-     
-     printf("Erreur sur le recv de la socket %d\n", errno); 
-     close(hSocket); /* Fermeture de la socket */ 
-     exit(1); 
-   }
-   if(DEBUG)
-      printf("le serveur a repondu voici la vlauer du token -%s- et la valeur que le serveur a renvoyer -%s- \n",tokenDeCon , msgServeur); 
+   strcpy(msgClientTmp,"\0");
+   strcat(msgClientTmp,"con:");
+   strcat(msgClientTmp,pseudo);
+   strcat(msgClientTmp,"@");
+   strcat(msgClientTmp,pass);
+
+   sendmsg(hSocket,msgClientTmp);
+   recevmsg(hSocket);
+
+
+   printf("*%s\n",msgServeur);
    strcpy(tokenDeCon,msgServeur);  
    if(DEBUG)
-      printf("nv val de token -%s-",tokenDeCon);
+    printf("nv val de token -%s-",tokenDeCon);
 
-   } 
+} 
 
 
 memset(msgClient,0,sizeof(msgClient));
+memset(msgClientTmp,0,sizeof(msgClient));
+///////////////////// part 2(when connected)
 while (true)
 {  
    printf("------------------\n");
@@ -166,17 +129,10 @@ while (true)
          strcpy(msgClient,"tok:");
          strcat(msgClient,tokenDeCon);
          strcat(msgClient,"@creation");
-         if (send(hSocket, msgClient, MAXSTRING, 0) == -1)  {  
-         printf("Erreur sur le send de la socket %d\n", errno); 
-         close(hSocket); /* Fermeture de la socket */ 
-         exit(1);
-         }
+
+         sendmsg(hSocket,msgClient);
          
-         if (recv(hSocket, msgServeur, MAXSTRING, 0) == -1) { 
-            printf("Erreur sur le recv de la socket %d\n", errno); 
-            close(hSocket); /* Fermeture de la socket */ 
-            exit(1); 
-         } 
+         recevmsg(hSocket);
          
          printf("val id %s\n",msgServeur);
          id_du_vac = atoi(msgServeur);
@@ -190,11 +146,7 @@ while (true)
          cin >> tmpsend ;
          strcat(msgClient,tmpsend);
          strcat(msgClient,"\0");
-         if (send(hSocket, msgClient, MAXSTRING, 0) == -1)  {
-            printf("Erreur sur le send de la socket %d\n", errno); 
-            close(hSocket); 
-            exit(1);
-         }
+         sendmsg(hSocket,msgClient);
 
          if (recv(hSocket, msgServeur, MAXSTRING, 0) == -1) { 
             printf("Erreur sur le recv de la socket %d\n", errno); 
@@ -211,17 +163,9 @@ while (true)
          cin >> tmpsend ;
          strcat(msgClient,tmpsend);
          strcat(msgClient,"\0");
-         if (send(hSocket, msgClient, MAXSTRING, 0) == -1)  {
-            printf("Erreur sur le send de la socket %d\n", errno); 
-            close(hSocket); /* Fermeture de la socket */ 
-            exit(1);
-         }
-
-         if (recv(hSocket, msgServeur, MAXSTRING, 0) == -1) { 
-            printf("Erreur sur le recv de la socket %d\n", errno); 
-            close(hSocket); /* Fermeture de la socket */ 
-            exit(1); 
-         } 
+         sendmsg(hSocket,msgClient);
+         
+         recevmsg(hSocket);
 
          memset(msgClient,'\0',sizeof(msgClient));
          strcpy(msgClient,"tok:");
@@ -232,18 +176,9 @@ while (true)
          cin >> tmpsend ;
          strcat(msgClient,tmpsend);
          strcat(msgClient,"\0");
-         if (send(hSocket, msgClient, MAXSTRING, 0) == -1)  {
-            printf("Erreur sur le send de la socket %d\n", errno); 
-            close(hSocket); /* Fermeture de la socket */ 
-            exit(1);
-         }
-
-         if (recv(hSocket, msgServeur, MAXSTRING, 0) == -1) { 
-            printf("Erreur sur le recv de la socket %d\n", errno); 
-            close(hSocket); /* Fermeture de la socket */ 
-            exit(1); 
-         } 
-
+         sendmsg(hSocket,msgClient);
+         
+         recevmsg(hSocket);
          memset(msgClient,'\0',sizeof(msgClient));
          strcpy(msgClient,"tok:");
          strcat(msgClient,tokenDeCon);
@@ -253,17 +188,9 @@ while (true)
          cin >> tmpsend ;
          strcat(msgClient,tmpsend);
          strcat(msgClient,"\0");
-         if (send(hSocket, msgClient, MAXSTRING, 0) == -1)  {
-            printf("Erreur sur le send de la socket %d\n", errno); 
-            close(hSocket); /* Fermeture de la socket */ 
-            exit(1);
-         }
-
-         if (recv(hSocket, msgServeur, MAXSTRING, 0) == -1) { 
-            printf("Erreur sur le recv de la socket %d\n", errno); 
-            close(hSocket); /* Fermeture de la socket */ 
-            exit(1); 
-         } 
+         sendmsg(hSocket,msgClient);
+         
+         recevmsg(hSocket);
 
 
          break;
@@ -277,7 +204,7 @@ while (true)
          strcat(msgClient,tokenDeCon);
          printf("type de modification \n");
          printf("-> n : nom\n") ; 
-         printf("-> p : presence\n") ; 
+         printf("-> p : prenom\n") ; 
          printf("-> d : date\n") ; 
          printf("-> e : présence\n") ; 
          cin >> modchoix ;
@@ -289,66 +216,19 @@ while (true)
          strcat(msgClient,tmpsend2);
          strcat(msgClient,"\0");
          printf("le msg envoyer au serv %s",msgClient);
-         if (send(hSocket, msgClient, MAXSTRING, 0) == -1)  {
-            printf("Erreur sur le send de la socket %d\n", errno); 
-            close(hSocket); /* Fermeture de la socket */ 
-            exit(1);
-         }
-
-         if (recv(hSocket, msgServeur, MAXSTRING, 0) == -1) { 
-            printf("Erreur sur le recv de la socket %d\n", errno); 
-            close(hSocket); /* Fermeture de la socket */ 
-            exit(1); 
-         } 
-
+         sendmsg(hSocket,msgClient);
+         
+         recevmsg(hSocket);
          printf("Well done\n" );
          break;
-      case 'D' :
-         printf("You passed\n" );
+      case 'J' :
+         printf("You are on cheatmode or not\n" );
          break;
-}
+   }
 
  }
 
-
-
-    /* 7.Envoi d'un deuxième message client */ 
-if(DEBUG)
-   printf("Message a envoyer : ");
-   cin >> msgClient ; 
- if (send(hSocket, msgClient, MAXSTRING, 0) == -1) /* pas message urgent */ { 
-   if(DEBUG)
-      printf("Erreur sur le send de la socket %d\n", errno); 
-     close(hSocket); /* Fermeture de la socket */ 
-     exit(1); 
- } 
- else{
-   if(DEBUG)
-      printf("Send socket OK\n");
- }  
-if(DEBUG)
-   printf("Message envoye = %s\n", msgClient); 
-    /* 8. Reception de l'ACK du serveur au client */ 
- if (recv(hSocket, msgServeur, MAXSTRING, 0) == -1) 
- { 
- if(DEBUG)
-   printf("Erreur sur le recv de la socket %d\n", errno); 
- close(hSocket); /* Fermeture de la socket */ 
- exit(1); 
- } 
- else{
-    if(DEBUG)
-    printf("Recv socket OK\n"); 
- } 
-if(DEBUG)
-   printf("Message recu en ACK = %s\n", msgServeur); 
-printf("******************************************* \n");
-
-
-
-
-
-
+///////////////////////////////////////////////
 
     /* 9. Fermeture de la socket */ 
  close(hSocket); /* Fermeture de la socket */ 
@@ -356,4 +236,46 @@ printf("******************************************* \n");
  return 0; 
 } 
 
-
+///////////////////////////////////////////////////////////
+int taille( char* ta){
+   int taille = 0 ;
+   while (ta[taille] != '\0') {
+      taille++;
+   }
+   return taille ;
+}
+/////////////////////////////////////////////////////////////   
+void sendmsg( int sock , char * val){
+   
+   char valTmp[MAXSTRING];
+   int nbraenv = taille(val);
+   snprintf(valTmp, 6, "%4d", nbraenv);
+   strcat(valTmp,val);
+    if (send(sock, valTmp, 4+nbraenv, 0) == -1)  {
+            printf("Erreur sur le send de la socket %d\n", errno); 
+            close(sock); /* Fermeture de la socket */ 
+            exit(1);
+         }
+}
+/////////////////////////////////////////////////////////////  
+void recevmsg(int hSocket){
+   char val[MAXSTRING];
+   int nbrtoread ;
+   memset(val,'\0',sizeof(val));
+   if (recv(hSocket, val, 4, 0) == -1) { 
+            printf("Erreur sur le recv de la socket %d\n", errno); 
+            close(hSocket); /* Fermeture de la socket */ 
+            exit(1); 
+         }
+   printf("-> %s",val);
+   nbrtoread = atoi(val);
+    if (recv(hSocket, val, nbrtoread, 0) == -1) { 
+            printf("Erreur sur le recv de la socket %d\n", errno); 
+            close(hSocket); /* Fermeture de la socket */ 
+            exit(1); 
+         }
+  printf(" : %s \n");
+  memset(msgServeur,'\0',sizeof(msgServeur));
+  strcpy(msgServeur,val);
+}
+/////////////////////////////////////////////////////////////
