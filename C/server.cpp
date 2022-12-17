@@ -1,12 +1,3 @@
-/* TCPITER01D.C 
-* serveur itératif mono-connexion * 
-- Claude Vilvens - 
-*/ 
-/////////////////////////////////////
-//       P46-47-48-49
-////////////////////////
-
-
 #include <stdio.h> 
 #include <stdlib.h> /* pour exit */ 
 #include <string.h> /* pour memcpy */
@@ -19,6 +10,7 @@
  ainsi que le conversion format local/format reseau */ 
 #include <netinet/tcp.h> /* pour la conversion adresse reseau->format dot */ 
 #include <arpa/inet.h> /* pour la conversion adresse reseau->format dot */ 
+#include "aes/aes.h"
 #define PORT 50000 /* Port d'ecoute de la socket serveur */ 
 #define MAXSTRING 100 /* Longueur des messages */ 
 int creationDunVac();
@@ -26,6 +18,13 @@ void modifvac(char id[4] , char val[25] , int zone);
 int taille( char* ta);
 int main() 
 { 
+
+uint8_t key[] = { 0x61, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe, 0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
+                      0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7, 0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4 };
+uint8_t crypt [MAXSTRING];
+struct AES_ctx ctx;
+AES_init_ctx(&ctx, key);
+
  int hSocketEcoute, /* Handle de la socket d'écoute */ 
  hSocketService; /* Handle de la socket de service connectee au client */ 
  struct hostent * infosHost; /*Infos sur le host : pour gethostbyname */ 
@@ -111,7 +110,9 @@ hSocketEcoute= socket(AF_INET, SOCK_STREAM, 0);
     exit(1); 
     } 
         printf("Message recu = %s\n", msgClient); 
-
+        memcpy(crypt,msgClient, MAXSTRING);
+        AES_ECB_decrypt(&ctx,crypt); 
+        memcpy(msgClient,crypt, MAXSTRING);
         /* 10. Envoi de l'ACK du serveur au client */ 
         // sprintf(msgServeur,"ACK pour votre message : <%s>", msgClient); 
         printf("\n\n\n\nla reponse envoyer est %s\n",msgClient);
@@ -177,6 +178,9 @@ hSocketEcoute= socket(AF_INET, SOCK_STREAM, 0);
         printf("val client %s \n",msgClient);
         printf("val msg %s \n",msgServeur);    
         memset(msgServeurSend,'\0',sizeof(msgServeurSend));
+        memcpy(crypt,msgServeur, MAXSTRING);
+        AES_ECB_encrypt(&ctx, crypt);
+        memcpy(msgServeur,crypt, MAXSTRING);
         int nbrcar = taille(msgServeur);
         snprintf(msgServeurSend, 6, "%4d", nbrcar);
         strcat(msgServeurSend,msgServeur);

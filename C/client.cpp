@@ -1,4 +1,3 @@
-
 #include <stdio.h> 
 #include <stdlib.h> /* pour exit */ 
 #include <string.h> /* pour memcpy */ 
@@ -11,6 +10,7 @@
 #include <arpa/inet.h> /* pour la conversion adresse reseau->format dot */ 
 #include <unistd.h>
 #include <iostream>
+#include "aes/aes.h"
 using namespace std;
 #define PORT 50000 /*F Port d'ecoute de la socket serveur */ 
 #define MAXSTRING 100 /* Longeur des messages */ 
@@ -20,7 +20,9 @@ void sendmsg( int sock , char * val);
 void recevmsg(int sock);
 
 char msgServeur[MAXSTRING];
-
+uint8_t key[] = { 0x61, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe, 0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
+                      0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7, 0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4 };
+ 
 int main() 
 { 
  int hSocket; /* Handle de la socket */ 
@@ -32,6 +34,7 @@ int main()
  char msgClient[MAXSTRING] , msgClientTmp[MAXSTRING], tokenDeCon[MAXSTRING]  , id_vac[5] ; 
  char choix ;
  char  pseudo[MAXSTRING] ="0", pass[MAXSTRING] ="0" ;  
+ 
     /* 1. Création de la socket */ 
  hSocket = socket(AF_INET, SOCK_STREAM, 0); 
  if (hSocket == -1) { 
@@ -247,10 +250,18 @@ int taille( char* ta){
 /////////////////////////////////////////////////////////////   
 void sendmsg( int sock , char * val){
    
+   struct AES_ctx ctx;
+   AES_init_ctx(&ctx, key);
+
    char valTmp[MAXSTRING];
+   uint8_t crypt [MAXSTRING];
+   memcpy(crypt,val, MAXSTRING);
+   AES_ECB_encrypt(&ctx, crypt);
+   memcpy(val,crypt, MAXSTRING);
    int nbraenv = taille(val);
    snprintf(valTmp, 6, "%4d", nbraenv);
    strcat(valTmp,val);
+   
     if (send(sock, valTmp, 4+nbraenv, 0) == -1)  {
             printf("Erreur sur le send de la socket %d\n", errno); 
             close(sock); /* Fermeture de la socket */ 
@@ -259,8 +270,12 @@ void sendmsg( int sock , char * val){
 }
 /////////////////////////////////////////////////////////////  
 void recevmsg(int hSocket){
+  // printf("hey tu recois un msg \n ");
    char val[MAXSTRING];
+   uint8_t crypt [MAXSTRING];
    int nbrtoread ;
+   struct AES_ctx ctx;
+   AES_init_ctx(&ctx, key);
    memset(val,'\0',sizeof(val));
    if (recv(hSocket, val, 4, 0) == -1) { 
             printf("Erreur sur le recv de la socket %d\n", errno); 
@@ -274,7 +289,10 @@ void recevmsg(int hSocket){
             close(hSocket); /* Fermeture de la socket */ 
             exit(1); 
          }
-  printf(" : %s \n");
+  memcpy(crypt,val, MAXSTRING);
+  AES_ECB_decrypt(&ctx,crypt); 
+  memcpy(val,crypt, MAXSTRING);
+ // printf(" : %s \n");
   memset(msgServeur,'\0',sizeof(msgServeur));
   strcpy(msgServeur,val);
 }
