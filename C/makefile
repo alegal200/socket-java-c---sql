@@ -1,11 +1,11 @@
-all:rm clear client server test
-#test envoi  
+all:rm clear envoi client server test
+#test  
 
 #remove compile project
 rm : 
 	rm client
 	rm server
-#	rm envoi
+	rm envoi
 	rm testing
 #clear console
 clear : 
@@ -32,11 +32,9 @@ envoi:
 
 
 # TO DO
-# sha256
-# java - c
-# java - c aes 
+# 
+# 
 # html p2 
-# html error 
 #
 #
-#
+# java - c aes 

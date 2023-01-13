@@ -6,42 +6,36 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-public class C_read_server_Runnable implements  Runnable{
+public class C_read_server {
 
 
 
     private String ip = "192.168.91.130";
     private int port  = 50011;
     private int id = 0 ; 
-    private String str = "alexandre;le;11/05/2019;Y";
+    private String str = "";
     
-    public C_read_server_Runnable (int idd){
+    public C_read_server (int idd){
         id =idd ;
-    }
-    public C_read_server_Runnable (){
-        
+        exec();
     }
     
-    @Override
-    public void run() {
+    private void exec() {
 
         try {
            Socket socket_client = new Socket(ip,port);
            BufferedOutputStream out = new BufferedOutputStream(  socket_client.getOutputStream()  ) ;
-           PrintWriter wrt = new PrintWriter(out) ;
-           BufferedReader buffRead = new BufferedReader(new InputStreamReader(socket_client.getInputStream())) ;
+           PrintWriter wrt = new PrintWriter(out) ;       
+           InputStream inputStream = socket_client.getInputStream();
            wrt.write("tok:112233445566@"+id+"*");
            wrt.flush();
-           String s;                   
-            while ( ( s = buffRead.readLine() ) != null ) {
+           String s;          
+           byte[] array = new byte[500];
+           inputStream.read(array);       
+           String data = new String(array);
+           str = data ;
 
-                System.out.println("-"+s+"-");
-                str = s ;
-                if(s.isEmpty())
-                    break;
-            }
-           
-           buffRead.close();
+           inputStream.close();
            wrt.close();
            socket_client.close();
 

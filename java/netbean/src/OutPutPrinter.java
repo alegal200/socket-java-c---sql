@@ -74,19 +74,44 @@ public class OutPutPrinter {
         this.endPage();
     }
 
-    public void erreur() throws IOException {
+    public void erreursend() throws IOException {
         
-          page += "HTTP/1.1 898 id introuvable \r\n";
-          page += "\r\n";
+          
           page += "<!DOCTYPE html>";
           page += "<html>";
           page += "<body>";
           page += "<h1>VACANCIER FINDER</h1>";
-          page += "<p>erreur du vac</p>";
-        this.endPage();
-
+          page += "<p>erreur du vac ( ID ou contenu) </p>";
+          this.endPage();
+          int nbrcar  = page.getBytes().length;
+          page = ("Content-Length: "+nbrcar  +"\r\n\r\n" ) +page ;
+          page = "HTTP/1.1 898 id introuvable "+"\r\n" + page;
+          o.write(page.getBytes());
+          o.flush();
+          page = "";
         
     }
+    
+    public void erreurgeneralsend() throws IOException {
+        
+          
+          page += "<!DOCTYPE html>";
+          page += "<html>";
+          page += "<body>";
+          page += "<h1>VACANCIER FINDER</h1>";
+          page += "<p>erreur ?????</p>";
+          this.endPage();
+          int nbrcar  = page.getBytes().length;
+          page = ("Content-Length: "+nbrcar  +"\r\n\r\n" ) +page ;
+          page = "HTTP/1.1 898 id introuvable "+"\r\n" + page;
+          o.write(page.getBytes());
+          o.flush();
+          page = "";
+        
+    }
+    
+    
+    
 
     public void send()throws IOException {
           
@@ -99,12 +124,10 @@ public class OutPutPrinter {
           
           page = ("Content-Length: "+nbrcar  +"\r\n\r\n" ) +page ;
           page = "HTTP/1.1 200 ok "+"\r\n" + page;
-          System.out.println("--------------");
-          System.out.println(page);
           o.write(page.getBytes());
           o.flush();
           page = "";
-          System.out.println("send -----------> data");
+          
     }
     
     

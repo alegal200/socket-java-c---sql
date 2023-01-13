@@ -39,12 +39,9 @@ private Socket ts ;
                                 id_str = id_str.split(" ")[0];
                             System.out.println("id est ->" + id_str + "<-");
                             id = Integer.parseInt(id_str) ;
-                             C_read_server_Runnable C_th = new C_read_server_Runnable( id) ;
-                            
-                            Thread C_Thread = new Thread(C_th  );
-                            C_Thread.start();
-                           // String ligneC = C_th.getval();
-                            String ligneC = "default;a;11/05/2000;Y" ;
+                            C_read_server C_th = new C_read_server( id) ;
+                            String ligneC = C_th.getval();
+                           // String ligneC = "default;a;11/05/2000;Y" ;
                             System.out.println("ligne recu par le c"+ligneC);
                            try{
                                
@@ -58,8 +55,8 @@ private Socket ts ;
                                
                                
                            }catch(Exception eer ){
-                               output_client_print.erreur();
-                               output_client_print.send();
+                               output_client_print.erreursend();
+                              
                            }
                             
                             
@@ -73,7 +70,6 @@ private Socket ts ;
 
 
                 }
-                System.out.println("id"+id);
                 if(id ==0){
                     output_client_print.firstPage();
                     output_client_print.send();
@@ -90,7 +86,15 @@ private Socket ts ;
 
 
         }catch (Exception e){
-            e.printStackTrace();
+            try{
+             OutputStream client_output = ts.getOutputStream() ;
+             OutPutPrinter output_client_print = new OutPutPrinter(client_output);
+             output_client_print.erreurgeneralsend();
+             ts.close();
+            }
+            catch(Exception exp){
+                exp.printStackTrace();
+            }
         }
     }
 }

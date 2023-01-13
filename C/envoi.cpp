@@ -55,30 +55,27 @@ hSocketEcoute= socket(AF_INET, SOCK_STREAM, 0);
  exit(1); 
  } 
  else printf("Bind adresse et port socket OK\n"); 
-/* 5. Mise a l'ecoute d'une requete de connexion */
- if (listen(hSocketEcoute,SOMAXCONN) == -1) 
- { 
- printf("Erreur sur lel isten de la socket %d\n", errno); 
- close(hSocketEcoute); /* Fermeture de la socket */ 
- exit(1); 
- } 
- else printf("Listen socket OK\n"); 
+ 
+   
 
 
 do{
+    /* 5. Mise a l'ecoute d'une requete de connexion */
+    if (listen(hSocketEcoute,SOMAXCONN) == -1)  { 
+        printf("Erreur sur lel isten de la socket %d\n", errno); 
+        close(hSocketEcoute); /* Fermeture de la socket */ 
+        exit(1); 
+    } 
+    else printf("Listen socket OK\n"); 
 
     /* 6. Acceptation d'une connexion */ 
     tailleSockaddr_in = sizeof(struct sockaddr_in); 
-    if ( (hSocketService = 
-    accept(hSocketEcoute, (struct sockaddr *)&adresseSocket, &tailleSockaddr_in) ) == -1) 
-    { 
-    printf("Erreur sur l'accept de la socket %d\n", errno); 
-    close(hSocketEcoute); exit(1); 
+    if ( (hSocketService =  accept(hSocketEcoute, (struct sockaddr *)&adresseSocket, &tailleSockaddr_in) ) == -1) { 
+        printf("Erreur sur l'accept de la socket %d\n", errno); 
+        close(hSocketEcoute); exit(1); 
     } 
     else printf("Accept socket OK\n"); 
     /* 7.Reception d'un message client */ 
-
-
     if ((nbreRecv = recv(hSocketService, msgClient, MAXSTRING, 0)) == -1)      { 
     printf("Erreur sur le recv de la socket %d\n", errno); 
     close(hSocketEcoute); /* Fermeture de la socket */ 
@@ -87,11 +84,10 @@ do{
     } 
 
     strncpy(msgHeader,msgClient,17);
-
     printf("Message recu = %s\n", msgClient); 
     msgHeader[17] ='\0';
     printf("msg header %s \n",msgHeader);
-   // printf("*\n");
+   
     if(strcmp(msgHeader,"tok:112233445566@") == 0){
         memcpy(msgServeur,&msgClient[17],9);
         for(int i = 0; i <= strlen(msgServeur); i++){
@@ -105,41 +101,41 @@ do{
         snprintf(msgServeur, 1, "%d", id); 
         printf("id est %d \n",id); 
         FILE *fp ;
-                char c ,id_read[5] ;
-                int id_int ;
-                long ln_seek ;  
+        char c ,id_read[5] ;
+        int id_int ;
+        long ln_seek ;  
 
-                fp = fopen("./current.vac","r");
-            
-                fseek(fp, 0, SEEK_SET);
-            
-                //lecture du 1 er id 
-                fread(id_read, sizeof(id_read), 1, fp); // lecture de
-                id_int = atoi(id_read); 
-                
-                while ( ( c = getc(fp)) != EOF ) {                   ///  |a;bcdefg
-                    if(c=='\n'){
-                    fread(id_read, sizeof(id_read), 1, fp); // lecture de l id 
-                    id_int = atoi(id_read);      
-                    }
+        fp = fopen("./current.vac","r");
+    
+        fseek(fp, 0, SEEK_SET);
+    
+        //lecture du 1 er id 
+        fread(id_read, sizeof(id_read), 1, fp); // lecture de
+        id_int = atoi(id_read); 
+        
+        while ( ( c = getc(fp)) != EOF ) {                   ///  |a;bcdefg
+            if(c=='\n'){
+            fread(id_read, sizeof(id_read), 1, fp); // lecture de l id 
+            id_int = atoi(id_read);      
+            }
 
-                    if(id_int == id ){ 
-                        int itRep = 0 ;
-                        while ( ( c = getc(fp)) != EOF ){
-                            if( c =='\n')
-                                break;
-                             //snprintf(car, 1, "%c", c); 
-                             //strcat(msgServeur,car);
-                             //printf(car);
-                             msgServeur[itRep] = c ;
-                            itRep++;    
-                        } 
-                        id_int = -1 ;   
-                                    
-                    }
-            
-                }
-                fclose(fp);
+            if(id_int == id ){ 
+                int itRep = 0 ;
+                while ( ( c = getc(fp)) != EOF ){
+                    if( c =='\n')
+                        break;
+                        //snprintf(car, 1, "%c", c); 
+                        //strcat(msgServeur,car);
+                        //printf(car);
+                        msgServeur[itRep] = c ;
+                    itRep++;    
+                } 
+                id_int = -1 ;   
+                            
+            }
+    
+        }
+        fclose(fp);
                 
 
         printf("msgserv %s*\n",msgServeur);
@@ -149,18 +145,10 @@ do{
 
     }
 
-
-        printf("val client %s \n",msgClient);
-        printf("val msg %s \n",msgServeur);    
-
+    printf("val client %s \n",msgClient);
+    printf("val msg %s \n",msgServeur);    
+   
     if (send(hSocketService, msgServeur, MAXSTRING, 0) == -1) 
-    { 
-        printf("Erreur sur le send de la socket %d\n", errno); 
-        close(hSocketEcoute); /* Fermeture de la socket */ 
-        close(hSocketService); /* Fermeture de la socket */ 
-        exit(1); 
-    }  
-     if (send(hSocketService, msgServeur, MAXSTRING, 0) == -1) 
     { 
         printf("Erreur sur le send de la socket %d\n", errno); 
         close(hSocketEcoute); /* Fermeture de la socket */ 
@@ -174,9 +162,9 @@ do{
  
 /* 11. Fermeture des sockets */ 
 close(hSocketService); /* Fermeture de la socket */ 
- printf("Socket connectee au client fermee\n"); 
+printf("Socket connectee au client fermee\n"); 
 close(hSocketEcoute); /* Fermeture de la socket */ 
- printf("Socket serveur fermee\n"); 
- return 0; 
+printf("Socket serveur fermee\n"); 
+return 0; 
 } 
 
