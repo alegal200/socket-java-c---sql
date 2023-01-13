@@ -17,9 +17,7 @@ private Socket ts ;
     @Override
     public void run() {
         try{
-
-                //       OutputStream out = ts.getOutputStream() ;
-                //       InputStream in = ts.getInputStream() ;
+ 
                 BufferedReader buffRead = new BufferedReader(new InputStreamReader(ts.getInputStream())) ;
                 OutputStream client_output = ts.getOutputStream() ;
                 OutPutPrinter output_client_print = new OutPutPrinter(client_output);
@@ -56,10 +54,12 @@ private Socket ts ;
                             int age = 2022 - anne ; //todo recup year better  
                             ArrayList<actyObj> actlst  = sqlconnector.getacty(age);
                             output_client_print.actyPage(actlst);
+                            output_client_print.send();
                                
                                
                            }catch(Exception eer ){
                                output_client_print.erreur();
+                               output_client_print.send();
                            }
                             
                             
@@ -74,8 +74,10 @@ private Socket ts ;
 
                 }
                 System.out.println("id"+id);
-                if(id ==0)
+                if(id ==0){
                     output_client_print.firstPage();
+                    output_client_print.send();
+                }
                 else{
 
                 }

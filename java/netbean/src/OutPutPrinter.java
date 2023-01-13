@@ -4,26 +4,27 @@ import java.util.ArrayList;
 
 public class OutPutPrinter {
     private OutputStream o ;
+    private String page ;
+    
+    
     public OutPutPrinter(OutputStream out){
         o = out ;
+        page = "";
     }
 
     private void startPage() throws IOException {
-        o.write("HTTP/1.1 200 ok \r\n".getBytes());
-        o.write("\r\n".getBytes());
-        o.write("<!DOCTYPE html>".getBytes());
-        o.write("<html>".getBytes());
-        o.write("<body>".getBytes());
-        o.write("<h1>VACANCIER FINDER</h1>".getBytes());
+        
+        page += "<!DOCTYPE html>\r\n";
+        page += "<html> \r\n";
+        page += "<body> \r\n";
+        page += "<h1>VACANCIER FINDER</h1> \r\n";
 
-
-        //o.write("".getBytes());
     }
     private void endPage() throws IOException {
-        o.write("</body>".getBytes());
-        o.write("</html>".getBytes());
-        o.write("\r\n\r\n".getBytes());
-        o.flush();
+         page += "</body>\r\n";
+         page += "</html>\r\n";
+         page += "\r\n\r\n";
+       
     }
     public void close() throws IOException  {
         o.close();
@@ -31,70 +32,81 @@ public class OutPutPrinter {
 
     public void  firstPage() throws IOException {
         this.startPage();
-        o.write("<p>id du vac :</p>".getBytes());
-        o.write("<form  method=\"GET\">".getBytes());
-        o.write("<input  name=\"id=\">".getBytes());
-        o.write("<input type=\"submit\" value=\"Send\">".getBytes());
-        o.write("<form>".getBytes());
+          page += "<p>id du vac :</p> \r\n";
+          page += "<form  method=\"GET\"> \r\n";
+          page += "<input  name=\"id=\"> \r\n";
+          page += "<input type=\"submit\" value=\"Send\"> \r\n";
+          page += "<form> \r\n";
 
         this.endPage();
 
     }
 
-
-public    void actyPage(ArrayList<actyObj> actlst) throws IOException {
+    public void actyPage(ArrayList<actyObj> actlst) throws IOException {
     
         this.startPage();
-        o.write("<table>".getBytes());
-        o.write("<tr>".getBytes());
-        o.write("<th>id</th>".getBytes()); 
-        o.write("<th>Nom</th>".getBytes()); 
-        o.write("<th>Date </th>".getBytes()); 
-        o.write("<th>temps en min</th>".getBytes());
-        o.write("<th>s'inscrire</th>".getBytes());
-        o.write("</tr>".getBytes());    
+          page += "<table>";
+          page += "<tr>";
+          page += "<th>id</th>"; 
+          page += "<th>Nom</th>"; 
+          page += "<th>Date </th>"; 
+          page += "<th>temps en min</th>";
+          page += "<th>s'inscrire</th>";
+          page += "</tr>";    
         for(int i = 0 ; i <actlst.size() ; i++ ){
-            o.write("<tr>".getBytes());
-            o.write(("<td>"+actlst.get(i).getid()+"</td>").getBytes());
-            o.write(("<td>"+actlst.get(i).getName()+"</td>").getBytes());
-            o.write(("<td>"+actlst.get(i).getDate_start()+"</td>").getBytes());
-            o.write(("<td>"+actlst.get(i).getNum_min()+"</td>").getBytes());
-            o.write(("<td>").getBytes());
-            o.write("<form  method=\"POST\">".getBytes());
-            o.write("<input type=\"submit\" value=\"Send\">".getBytes());
-            o.write(("<td>").getBytes()); 
-            o.write("<form>".getBytes());
-            o.write(("</td>").getBytes());
-            
-            
-            o.write("</tr>".getBytes());
+              page += "<tr>";
+              page +=  ("<td>"+actlst.get(i).getid()+"</td>");
+              page +=  ("<td>"+actlst.get(i).getName()+"</td>");
+              page += ("<td>"+actlst.get(i).getDate_start()+"</td>");
+              page += ("<td>"+actlst.get(i).getNum_min()+"</td>");
+              page += ("<td>");
+              page += "<form  method=\"POST\">";
+              page += "<input type=\"submit\" value=\"Send\">";
+              page += ("<td>"); 
+              page += "<form>";
+              page += ("</td>");
+              page += "</tr>";
         }
 
 
-        o.write("</table>".getBytes());
+          page += "</table>";
 
         this.endPage();
     }
-
-
 
     public void erreur() throws IOException {
         
-        o.write("HTTP/1.1 898 id introuvable \r\n".getBytes());
-        o.write("\r\n".getBytes());
-        o.write("<!DOCTYPE html>".getBytes());
-        o.write("<html>".getBytes());
-        o.write("<body>".getBytes());
-        o.write("<h1>VACANCIER FINDER</h1>".getBytes());
-        o.write("<p>erreur du vac</p>".getBytes());
+          page += "HTTP/1.1 898 id introuvable \r\n";
+          page += "\r\n";
+          page += "<!DOCTYPE html>";
+          page += "<html>";
+          page += "<body>";
+          page += "<h1>VACANCIER FINDER</h1>";
+          page += "<p>erreur du vac</p>";
         this.endPage();
 
         
     }
 
+    public void send()throws IOException {
+          
+          int nbrcar  = page.getBytes().length;
+          
+          System.out.println("/"+nbrcar+"/");
+          //o.write( "HTTP/1.1 200 ok ".getBytes() ) ;
+          //o.write( "Content-Type: text/html; charset=UTF-8".getBytes());
+          //o.write( ("Content-Length:"+nbrcar   ).getBytes() ); 
+          
+          page = ("Content-Length: "+nbrcar  +"\r\n\r\n" ) +page ;
+          page = "HTTP/1.1 200 ok "+"\r\n" + page;
+          System.out.println("--------------");
+          System.out.println(page);
+          o.write(page.getBytes());
+          o.flush();
+          page = "";
+          System.out.println("send -----------> data");
+    }
     
-
-
-
+    
 
 }

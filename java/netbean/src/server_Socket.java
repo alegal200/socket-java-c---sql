@@ -9,7 +9,7 @@ public class server_Socket {
 
     public server_Socket() {
         try {
-            ServerSocket ss = new ServerSocket(8093);
+            ServerSocket ss = new ServerSocket(8080);
             ExecutorService executor = Executors.newFixedThreadPool(2);
             while (true) {
                 System.out.println("En attente d'un nouvelle connexion");
