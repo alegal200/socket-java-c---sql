@@ -1,5 +1,6 @@
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -31,18 +32,18 @@ public class C_read_server_Runnable implements  Runnable{
            BufferedReader buffRead = new BufferedReader(new InputStreamReader(socket_client.getInputStream())) ;
            wrt.write("tok:112233445566@"+id+"*");
            wrt.flush();
-           String s ;
-                while ( ( s = buffRead.readLine() ) != null ) {
+           String s;                   
+            while ( ( s = buffRead.readLine() ) != null ) {
 
-                    System.out.println("-"+s+"-");
-                    str = s ;
-                    if(s.isEmpty())
-                        break;
-                }
+                System.out.println("-"+s+"-");
+                str = s ;
+                if(s.isEmpty())
+                    break;
+            }
            
            buffRead.close();
            wrt.close();
-           
+           socket_client.close();
 
         } catch (Exception e) {
             e.printStackTrace();

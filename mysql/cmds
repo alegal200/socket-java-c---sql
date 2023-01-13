@@ -1,0 +1,11 @@
+yum -y install wget
+wget https://repo.mysql.com/mysql80-community-release-el8-1.noarch.rpm
+ yum -y install https://repo.mysql.com/mysql80-community-release-el8-1.noarch.rpm
+ systemctl start mysqld
+ systemctl enable mysqld
+
+SHOW database ;
+CREATE DATABASE ALEXDB ;
+use ALEXDB ;
+create table test(test1 varchar(50), test2 varchar(80) );
+Describe test ;

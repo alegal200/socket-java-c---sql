@@ -11,11 +11,14 @@
 #include <netinet/tcp.h> /* pour la conversion adresse reseau->format dot */ 
 #include <arpa/inet.h> /* pour la conversion adresse reseau->format dot */ 
 #include "aes/aes.h"
+#include "sha/sha256.h"
 #define PORT 50000 /* Port d'ecoute de la socket serveur */ 
 #define MAXSTRING 100 /* Longueur des messages */ 
 int creationDunVac();
 void modifvac(char id[4] , char val[25] , int zone);
+void findobj(char pseudo[MAXSTRING] );
 int taille( char* ta);
+char salt[10] , salthash[256] ; 
 int main() 
 { 
 
@@ -32,7 +35,8 @@ AES_init_ctx(&ctx, key);
  struct sockaddr_in adresseSocket; 
  /* Structure de type sockaddr contenant les infos adresses - ici, cas de TCP */ 
  uint tailleSockaddr_in; 
- char msgClient[MAXSTRING], msgServeur[MAXSTRING] ,  msgServeurSend[MAXSTRING] , msgHeader[25] ,  msgid[4]; ; 
+ char msgClient[MAXSTRING], msgServeur[MAXSTRING] ,  msgServeurSend[MAXSTRING] , msgHeader[25] ,  msgid[4] ,conmsg[MAXSTRING], hash[64] ;
+
  int nbreRecv; 
 /* 1. Création de la socket */ 
 hSocketEcoute= socket(AF_INET, SOCK_STREAM, 0); 
@@ -115,11 +119,60 @@ hSocketEcoute= socket(AF_INET, SOCK_STREAM, 0);
         memcpy(msgClient,crypt, MAXSTRING);
         /* 10. Envoi de l'ACK du serveur au client */ 
         // sprintf(msgServeur,"ACK pour votre message : <%s>", msgClient); 
-        printf("\n\n\n\nla reponse envoyer est %s\n",msgClient);
+        printf("\n\nla reponse envoyer par le client est %s\n",msgClient);
         strncpy(msgHeader,msgClient,23);
         printf("val du header %s \n",msgHeader);
-        if( strcmp("con:alex@pass",msgClient) == 0){
-            strcpy( msgServeur ,"123456789987654321" ) ;
+
+        // regarder si ca commence par con:
+        memcpy(conmsg,&msgClient[0],4);
+        conmsg[4]= '\0';
+        if( strcmp("con:",conmsg) == 0){//con:alex@pass
+           // printf("il y a une tentative de co \n");
+            // oui regarder pseudo -> @ 
+            for (int i = 4; i < MAXSTRING-4 ; i++)
+            {
+                if( msgClient[i] == '@')
+                    break;
+                conmsg[i-4] = msgClient[i];
+            }
+            printf("pseudo decouper : %s \n",conmsg);
+            
+            // chercher le peseudo dans le fichierr 
+            findobj(conmsg);
+            // recup le sel recup de hash
+            printf("val du salt %s\n ",salt);
+            printf("val hash salt : %s \n",salthash);
+            // hasher le mdp 
+            int nbrcarpseudo =  strlen(conmsg) +1 ;
+            for (int i = ( 4 + nbrcarpseudo ); i < MAXSTRING ; i++) {
+                
+                conmsg[i-4 - nbrcarpseudo] = msgClient[i];
+                if( msgClient[i] == '\0')
+                    break;
+
+            }
+            
+            printf("lke mdp est  : %s \n",conmsg);
+            strcat(conmsg,salt);
+
+
+             Sha256Context ctx;
+             SHA256_HASH hasher;
+            Sha256Initialise( &ctx );
+            Sha256Update( &ctx, (uint8_t*)conmsg, strlen(conmsg) );
+            Sha256Finalise( &ctx, &hasher );
+            for (int i = 0; i < 64; i = i+2)
+                sprintf(&hash[i], "%02x", hasher.bytes[i/2]);
+        
+            printf("le hash est  %s1 \n",hash);
+            printf("l autre est %s",salthash);
+            // comparer les hashs si oui alors  
+            if (strcmp(hash , salthash) == 0 )      
+                strcpy( msgServeur ,"123456789987654321" ) ;
+            else
+                strcpy(msgServeur,"ERROR\0");
+            
+             
         }
         
         else if(strcmp("tok:123456789987654321@",msgHeader) == 0){
@@ -216,13 +269,6 @@ int taille( char* ta){
    return taille ;
 }
    
-
-
-
-
-
-
-
 ///////////////////////////////////
 ///// ouverture du fichier + création d une ligne pour un nouveau vac + return id vac (int)
 //////////////////////////////////
@@ -298,3 +344,60 @@ void modifvac(char id[5] , char val[25], int zone){
     remove("./current.vac");
     rename("./tmp.vac","./current.vac");
 }
+
+///////////////////////////////////////////////////////////////////
+////////////////////////find salt
+///////////////////////////////////////////////////////////////////
+void findobj(char ps[MAXSTRING] ){
+    printf("enter findobj fct\n ");
+    FILE *fp , *fp_tmp;
+    fp = fopen("./superuser","r");
+    long ln_seek ; 
+    char c ;
+    int pos = 0 ;
+    char pseudo[MAXSTRING];
+    fseek(fp, 0, SEEK_SET);
+    while ( ( c = getc(fp)) != EOF ) {   
+
+
+        if(c==';'){
+            pseudo[pos] = '\0';
+            pos = 0;
+            if( strcmp(pseudo , ps) ==0){
+                  while ( ( c = getc(fp)) != ';'){
+                    salt[pos] = c ;
+                    pos++;
+                  }
+                  pos = 0;
+                  while ( ( c = getc(fp)) != '\n'){
+                    salthash[pos] = c ;
+                    pos++;
+                  }
+                  return ; 
+            }
+        }
+        
+        pseudo[pos] = c ;
+        pos ++; 
+
+        if(c=='\n'){
+            pos =0;
+        }
+        if(c=='\r'){
+            pos =0;
+        }
+        
+        if(pos >= MAXSTRING )
+            pos = 0 ;
+
+        
+
+
+    }
+
+    strcpy(salt, "ERROR\0");
+
+
+
+}
+///////////////////////////////////////////////////////////////////

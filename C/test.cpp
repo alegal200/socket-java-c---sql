@@ -1,38 +1,37 @@
-
-// C++ program to demonstrate the
-// cin object
-#include <iostream>
+#include "sha/sha256.h"
+#include <stdio.h>
 #include <stdio.h> 
 #include <stdlib.h> /* pour exit */ 
-#include <string.h> /* pour memcpy */ 
-#include "aes/aes.h"
-using namespace std;
-// Driver Code
+#include <string.h> 
+
 int main()
 {
-  printf("tester \n");
-  uint8_t key[] = { 0x61, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe, 0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
-                      0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7, 0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4 };
-  uint8_t in[]  = { 'A', 'L', 'E', 'X', 'E', 'S', 'T', 'U', 'N', 'B', 'G','4','r', 't', 'o', 'b','f' };
-  struct AES_ctx ctx;
-  AES_init_ctx(&ctx, key);
-  for (int i = 0; i <17 ; i++)
-  {
-    printf("-%c",in[i]);
-  }
-  printf("\n");
-  AES_ECB_encrypt(&ctx, in);
-  for (int i = 0; i <17 ; i++)
-  {
-    printf("/%c",in[i]);
-  }
-  printf("\n");
-  AES_ECB_decrypt(&ctx,in);
-  for (int i = 0; i <17 ; i++)
-  {
-    printf("*%c",in[i]);
-  }
-  printf("\n");
+    printf("salt \n");
+    Sha256Context ctx;
+    SHA256_HASH hash;
+    char input[] = "Hello, World!";
+     char has [64] , c [64] ;
+    // Initialisation du contexte
+    Sha256Initialise( &ctx );
+
+    // Ajout des données à hacher
+    Sha256Update( &ctx, (uint8_t*)input, strlen(input) );
+
+    // Calcul du hash
+    Sha256Finalise( &ctx, &hash );
+
+    // Impression du hash en hexadécimal
+    for (int i = 0; i < 64; i = i+2)
+    {
+        printf("%02x", hash.bytes[i/2]);
+        sprintf(&has[i], "%02x", hash.bytes[i/2]);
+        
+        
+    }
+    
+
+
+    printf("\n*%s*\n",has);
+    return 0;
 
 }
-

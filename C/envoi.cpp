@@ -1,12 +1,3 @@
-/* TCPITER01D.C 
-* serveur itératif mono-connexion * 
-- Claude Vilvens - 
-*/ 
-/////////////////////////////////////
-//       P46-47-48-49
-////////////////////////
-
-
 #include <stdio.h> 
 #include <stdlib.h> /* pour exit */ 
 #include <string.h> /* pour memcpy */
@@ -35,17 +26,15 @@ int main()
  int nbreRecv; 
 /* 1. Création de la socket */ 
 hSocketEcoute= socket(AF_INET, SOCK_STREAM, 0); 
- if (hSocketEcoute== -1) 
- { 
- printf("Erreur de creation de la socket %d\n", errno); 
- exit(1); 
+ if (hSocketEcoute== -1) { 
+    printf("Erreur de creation de la socket %d\n", errno); 
+    exit(1); 
  } 
  else printf("Creation de la socket OK\n"); 
 /* 2. Acquisition des informations sur l'ordinateur local */ 
- if ( (infosHost = gethostbyname("moon"))==0) 
- { 
- printf("Erreur d'acquisition d'infos sur le host %d\n", errno); 
- exit(1); 
+ if ( (infosHost = gethostbyname("moon"))==0) { 
+    printf("Erreur d'acquisition d'infos sur le host %d\n", errno); 
+    exit(1); 
  } 
  else printf("Acquisition infos host OK\n"); 
  memcpy(&adresseIP, infosHost->h_addr, infosHost->h_length); 
@@ -74,20 +63,20 @@ hSocketEcoute= socket(AF_INET, SOCK_STREAM, 0);
  exit(1); 
  } 
  else printf("Listen socket OK\n"); 
-/* 6. Acceptation d'une connexion */ 
- tailleSockaddr_in = sizeof(struct sockaddr_in); 
- if ( (hSocketService = 
- accept(hSocketEcoute, (struct sockaddr *)&adresseSocket, &tailleSockaddr_in) ) 
- == -1) 
- { 
- printf("Erreur sur l'accept de la socket %d\n", errno); 
- close(hSocketEcoute); exit(1); 
- } 
- else printf("Accept socket OK\n"); 
-/* 7.Reception d'un message client */ 
+
 
 do{
 
+    /* 6. Acceptation d'une connexion */ 
+    tailleSockaddr_in = sizeof(struct sockaddr_in); 
+    if ( (hSocketService = 
+    accept(hSocketEcoute, (struct sockaddr *)&adresseSocket, &tailleSockaddr_in) ) == -1) 
+    { 
+    printf("Erreur sur l'accept de la socket %d\n", errno); 
+    close(hSocketEcoute); exit(1); 
+    } 
+    else printf("Accept socket OK\n"); 
+    /* 7.Reception d'un message client */ 
 
 
     if ((nbreRecv = recv(hSocketService, msgClient, MAXSTRING, 0)) == -1)      { 
@@ -170,7 +159,14 @@ do{
         close(hSocketEcoute); /* Fermeture de la socket */ 
         close(hSocketService); /* Fermeture de la socket */ 
         exit(1); 
-    }    
+    }  
+     if (send(hSocketService, msgServeur, MAXSTRING, 0) == -1) 
+    { 
+        printf("Erreur sur le send de la socket %d\n", errno); 
+        close(hSocketEcoute); /* Fermeture de la socket */ 
+        close(hSocketService); /* Fermeture de la socket */ 
+        exit(1); 
+    }     
     else printf("Send socket OK\n");
     
     /* code */

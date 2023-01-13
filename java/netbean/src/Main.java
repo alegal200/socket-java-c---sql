@@ -11,14 +11,15 @@ public class Main {
 
     public static void main(String[] args) {
         System.out.println("slt bg alex");
-    //    server_Socket s = new server_Socket();
+        server_Socket s = new server_Socket();
          // Thread serverThread = new Thread(new HTTP_Server_Runable());
          // serverThread.start();
-         C_read_server_Runnable  ct= new  C_read_server_Runnable(4);
+/*         C_read_server_Runnable  ct= new  C_read_server_Runnable(6);
          Thread C_Thread = new Thread( ct);
         C_Thread.start();
+        
         System.out.println("***"+ct.getval() );
-     /*
+     *//*
        ArrayList<actyObj> actlst  = sqlconnector.getacty(18);
        
        for (int i=0; i<actlst.size() ;i++) {

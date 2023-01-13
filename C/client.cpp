@@ -267,6 +267,7 @@ void sendmsg( int sock , char * val){
             close(sock); /* Fermeture de la socket */ 
             exit(1);
          }
+ //  printf("val envoyer chiffré :%s \n",valTmp);
 }
 /////////////////////////////////////////////////////////////  
 void recevmsg(int hSocket){
@@ -282,7 +283,7 @@ void recevmsg(int hSocket){
             close(hSocket); /* Fermeture de la socket */ 
             exit(1); 
          }
-   printf("-> %s",val);
+   //printf("-> %s",val);
    nbrtoread = atoi(val);
     if (recv(hSocket, val, nbrtoread, 0) == -1) { 
             printf("Erreur sur le recv de la socket %d\n", errno); 
@@ -292,7 +293,7 @@ void recevmsg(int hSocket){
   memcpy(crypt,val, MAXSTRING);
   AES_ECB_decrypt(&ctx,crypt); 
   memcpy(val,crypt, MAXSTRING);
- // printf(" : %s \n");
+ // printf("envoie resaux  : %s \n",val);
   memset(msgServeur,'\0',sizeof(msgServeur));
   strcpy(msgServeur,val);
 }
