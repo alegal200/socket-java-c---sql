@@ -41,8 +41,23 @@ public class OutPutPrinter {
         this.endPage();
 
     }
+    
+    public void execpage() throws IOException {
+        this.startPage();
+        page += "<p>CONGRATS you are register !</p>";
+        this.endPage();
+        this.send();
+    }
+    
+    
+    public void personnenotherepage() throws IOException {
+          this.startPage();
+        page += "<p>this person is not in vacation camp </p>";
+        this.endPage();
+        this.send();
+    }
 
-    public void actyPage(ArrayList<actyObj> actlst) throws IOException {
+    public void actyPage(ArrayList<actyObj> actlst, int id) throws IOException {
     
         this.startPage();
           page += "<table>";
@@ -60,17 +75,32 @@ public class OutPutPrinter {
               page += ("<td>"+actlst.get(i).getDate_start()+"</td>");
               page += ("<td>"+actlst.get(i).getNum_min()+"</td>");
               page += ("<td>");
-              page += "<form  method=\"POST\">";
-              page += "<input type=\"submit\" value=\"Send\">";
+             // page += "<form  method=\"POST\">";
+             
+              //page += "<input type=\"submit\" value=\"s inscrire\">";
+              page += "<form id=\"myForm"+actlst.get(i).getid()+"\" action=\"http://localhost:8080/act="+actlst.get(i).getid()+"pers="+id+"\" method=\"POST\">\n" ;
+             // page +=  "    <input type=\"hidden\" name=\"data\" value=\"hello\">\n" ;
+              page +=   "   <input type=\"submit\" value=\"inscrire\">\n" ;
+              page +=  "</form>";
+              
+              
               page += ("<td>"); 
               page += "<form>";
               page += ("</td>");
               page += "</tr>";
+           
+             
         }
-
+           
+            
+            
+        if(actlst.size() == 0 )
+            page += "<p>Il n'y a pas d activitees pour son age</p>" ;
 
           page += "</table>";
-
+          
+            
+            
         this.endPage();
     }
 
